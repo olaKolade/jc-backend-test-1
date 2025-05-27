@@ -4,6 +4,7 @@ import com.virginholidays.backend.test.api.Flight;
 import com.virginholidays.backend.test.configuration.DataSourceConfiguration;
 import java.net.URL;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -83,5 +85,45 @@ public class FlightInfoRepositoryImplTest {
         assertThat(maybeFlights.get().get(26).days().get(4), equalTo(DayOfWeek.THURSDAY));
         assertThat(maybeFlights.get().get(26).days().get(5), equalTo(DayOfWeek.FRIDAY));
         assertThat(maybeFlights.get().get(26).days().get(6), equalTo(DayOfWeek.SATURDAY));
+    }
+
+    @Test
+    @DisplayName("Flights are filtered by date")
+    public void testFindByDate() throws ExecutionException, InterruptedException {
+        // prepare
+        ClassLoader classLoader = mock(ClassLoader.class);
+        URL resource = getClass().getResource("/flights.csv");
+        LocalDate localDateSunday = LocalDate.parse("2025-05-25"); // SUNDAY
+
+        when(resourceLoader.getClassLoader()).thenReturn(classLoader);
+        when(classLoader.getResource(anyString())).thenReturn(resource);
+
+        // act
+        Optional<List<Flight>> maybeFlights = repository
+                .findFlightByDate(localDateSunday)
+                .toCompletableFuture()
+                .get();
+
+        // assert
+        assertThat(maybeFlights.isPresent(), equalTo(true));
+        assertThat(maybeFlights.get().size(), equalTo(9));
+        assertThat(maybeFlights.get().get(0).departureTime(), equalTo(LocalTime.of(9, 0)));
+        assertThat(maybeFlights.get().get(0).destination(), equalTo("St Lucia"));
+        assertThat(maybeFlights.get().get(0).iata(), equalTo("UVF"));
+        assertThat(maybeFlights.get().get(0).flightNo(), equalTo("VS097"));
+        assertThat(maybeFlights.get().get(0).days().size(), equalTo(1));
+
+        assertThat(maybeFlights.get().get(8).departureTime(), equalTo(LocalTime.of(15, 35)));
+        assertThat(maybeFlights.get().get(8).destination(), equalTo("Las Vegas"));
+        assertThat(maybeFlights.get().get(8).iata(), equalTo("LAS"));
+        assertThat(maybeFlights.get().get(8).flightNo(), equalTo("VS044"));
+        assertThat(maybeFlights.get().get(8).days().size(), equalTo(7));
+        assertThat(maybeFlights.get().get(8).days().get(0), equalTo(DayOfWeek.SUNDAY));
+        assertThat(maybeFlights.get().get(8).days().get(1), equalTo(DayOfWeek.MONDAY));
+        assertThat(maybeFlights.get().get(8).days().get(2), equalTo(DayOfWeek.TUESDAY));
+        assertThat(maybeFlights.get().get(8).days().get(3), equalTo(DayOfWeek.WEDNESDAY));
+        assertThat(maybeFlights.get().get(8).days().get(4), equalTo(DayOfWeek.THURSDAY));
+        assertThat(maybeFlights.get().get(8).days().get(5), equalTo(DayOfWeek.FRIDAY));
+        assertThat(maybeFlights.get().get(8).days().get(6), equalTo(DayOfWeek.SATURDAY));
     }
 }

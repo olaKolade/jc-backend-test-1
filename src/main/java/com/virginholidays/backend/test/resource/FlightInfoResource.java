@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.springframework.http.CacheControl.noCache;
@@ -47,17 +48,15 @@ public class FlightInfoResource {
      * @return flights for the day of the chosen date
      */
     @RequestMapping(method = RequestMethod.GET, path = "/{date}/results")
-    public CompletionStage<ResponseEntity<?>> getResults(@PathVariable("date") @NotEmpty String date) {
+    public ResponseEntity<?> getResults(@PathVariable("date") @NotEmpty String date) {
         LocalDate inputDate;
 
         try {
             inputDate = LocalDate.parse(date);
         } catch (DateTimeParseException e) {
-            return completedFuture(
-                    status(HttpStatus.BAD_REQUEST)
-                            .cacheControl(noCache())
-                            .body("Invalid date format. Allowed formats are: yyyy-MM-dd")
-            );
+            return status(HttpStatus.BAD_REQUEST)
+                    .cacheControl(noCache())
+                    .body("Invalid date format. Allowed formats are: yyyy-MM-dd");
         }
 
         try {
@@ -75,9 +74,12 @@ public class FlightInfoResource {
                         List<Flight> results = maybeResults.get();
 
                         return status(HttpStatus.OK).cacheControl(noCache()).body(results);
-                    });
+                    })
+                    .toCompletableFuture().get();
         } catch (UncheckedIOException e) {
-            return completedFuture(status(HttpStatus.INTERNAL_SERVER_ERROR).cacheControl(noCache()).body("Unable to load flight data. Please try again later."));
+            return status(HttpStatus.INTERNAL_SERVER_ERROR).cacheControl(noCache()).body("Unable to load flight data. Please try again later.");
+        } catch (ExecutionException | InterruptedException e) {
+            return status(HttpStatus.INTERNAL_SERVER_ERROR).cacheControl(noCache()).body("Something went wrong. Please try again later.");
         }
     }
 }

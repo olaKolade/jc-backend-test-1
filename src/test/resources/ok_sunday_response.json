@@ -1,0 +1,21 @@
+[
+  {
+    "departureTime": "09:00",
+    "destination": "St Lucia",
+    "iata": "UVF",
+    "flightNo": "VS097",
+    "days": [
+      "MONDAY",
+      "TUESDAY"
+    ]
+  },
+  {
+    "departureTime": "09:00",
+    "destination": "Tobago",
+    "iata": "TAB",
+    "flightNo": "VS097",
+    "days": [
+      "SUNDAY"
+    ]
+  }
+]
