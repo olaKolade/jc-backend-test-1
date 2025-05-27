@@ -1,6 +1,8 @@
 package com.virginholidays.backend.test.repository;
 
 import com.virginholidays.backend.test.api.Flight;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -18,4 +20,5 @@ public interface FlightInfoRepository {
      * @return an optional of all the flights
      */
     CompletionStage<Optional<List<Flight>>> findAll();
+    CompletionStage<Optional<List<Flight>>> findFlightByDate(LocalDate date);
 }

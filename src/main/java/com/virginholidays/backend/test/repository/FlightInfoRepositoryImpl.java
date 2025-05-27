@@ -9,13 +9,20 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.time.DayOfWeek;
 import static java.time.LocalTime.parse;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import static java.util.Objects.requireNonNull;
 import java.util.Optional;
-import static java.util.Optional.ofNullable;
+
 import static java.util.concurrent.CompletableFuture.completedFuture;
+
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Predicate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ResourceLoader;
@@ -49,9 +56,21 @@ public class FlightInfoRepositoryImpl implements FlightInfoRepository {
 
     @Override
     public CompletionStage<Optional<List<Flight>>> findAll() {
-
         LOGGER.info("Loading flight information");
 
+        return getFilteredFlights(flight -> true);
+    }
+
+
+    @Override
+    public CompletionStage<Optional<List<Flight>>> findFlightByDate(LocalDate date) {
+        LOGGER.info("Loading flight information {} {}", date, date.getDayOfWeek());
+
+        return getFilteredFlights(flight -> flight.days().contains(date.getDayOfWeek()));
+    }
+
+
+    private CompletableFuture<Optional<List<Flight>>> getFilteredFlights(Predicate<Flight> flightPredicate) {
         // load the resource
         URL resource = requireNonNull(resourceLoader.getClassLoader()).getResource(dataSourceConfiguration.getCsvLocation());
 
@@ -63,10 +82,12 @@ public class FlightInfoRepositoryImpl implements FlightInfoRepository {
                     .lines()
                     .skip(1L)
                     .map(this::flight)
+                    .filter(flightPredicate)
+                    .sorted(Comparator.comparing(Flight::departureTime))
                     .toList();
 
             // return the results
-            return completedFuture(ofNullable(flights));
+            return completedFuture(Optional.of(flights));
 
         } catch (IOException e) {
             LOGGER.error("Could not retrieve flight data", e);
