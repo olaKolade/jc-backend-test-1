@@ -2,12 +2,14 @@ package com.virginholidays.backend.test.repository;
 
 import com.virginholidays.backend.test.api.Flight;
 import com.virginholidays.backend.test.configuration.DataSourceConfiguration;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.time.DayOfWeek;
+
 import static java.time.LocalTime.parse;
 
 import java.time.LocalDate;
@@ -76,7 +78,7 @@ public class FlightInfoRepositoryImpl implements FlightInfoRepository {
 
         // return the results
         return completedFuture(Optional.of(flightStream
-                        .stream()
+                .stream()
                 .filter(flightPredicate)
                 .sorted(Comparator.comparing(Flight::departureTime))
                 .toList()));

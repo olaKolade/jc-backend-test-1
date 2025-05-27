@@ -1,18 +1,14 @@
 package com.virginholidays.backend.test.service;
 
 import com.virginholidays.backend.test.repository.FlightInfoRepository;
-import com.virginholidays.backend.test.repository.FlightInfoRepositoryImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.*;
 
 /**

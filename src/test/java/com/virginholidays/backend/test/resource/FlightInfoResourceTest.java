@@ -2,10 +2,8 @@ package com.virginholidays.backend.test.resource;
 
 import com.virginholidays.backend.test.api.Flight;
 import com.virginholidays.backend.test.service.FlightInfoService;
-import com.virginholidays.backend.test.service.FlightInfoServiceImpl;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +23,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -48,14 +45,16 @@ class FlightInfoResourceTest {
     private FlightInfoService flightInfoService;
 
     @Test
-    void getFlightInfo() throws Exception {
+    @DisplayName("Invalid flight dates are validated")
+    void getFlightInfo_InvalidDate() throws Exception {
         mockMvc.perform(get("/389292/results"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Invalid date format. Allowed formats are: yyyy-MM-dd"));
     }
 
     @Test
-    void getFlightInfo2() throws Exception {
+    @DisplayName("Valid flight dates are returned")
+    void getFlightInfo_ValidDate() throws Exception {
         String expectedString = Files.readString(new ClassPathResource("/ok_sunday_response.json").getFile().toPath(), StandardCharsets.UTF_8);
         String localDateString = "2025-05-27";
         LocalDate now = LocalDate.parse(localDateString);
@@ -71,7 +70,8 @@ class FlightInfoResourceTest {
     }
 
     @Test
-    void getFlightInf() throws Exception {
+    @DisplayName("Data loading exception is handled appropriately")
+    void getFlightInfo_HandleDataException() throws Exception {
         String localDateString = "2025-05-27";
         LocalDate now = LocalDate.parse(localDateString);
         when(flightInfoService.findFlightByDate(now)).thenThrow(new UncheckedIOException(new IOException()));
