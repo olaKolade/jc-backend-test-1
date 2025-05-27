@@ -2,6 +2,8 @@ package com.virginholidays.backend.test.resource;
 
 import com.virginholidays.backend.test.api.Flight;
 import com.virginholidays.backend.test.service.FlightInfoService;
+
+import java.io.UncheckedIOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -53,21 +55,29 @@ public class FlightInfoResource {
         } catch (DateTimeParseException e) {
             return completedFuture(
                     status(HttpStatus.BAD_REQUEST)
-                    .cacheControl(noCache())
-                    .body("Invalid date format. Allowed formats are: yyyy-MM-dd")
+                            .cacheControl(noCache())
+                            .body("Invalid date format. Allowed formats are: yyyy-MM-dd")
             );
         }
 
-        return flightInfoService.findFlightByDate(inputDate).thenApply(maybeResults -> {
+        try {
+            return flightInfoService.findFlightByDate(inputDate)
+                    .handle((maybeResults, error) -> {
+                        if (error != null) {
+                            return status(HttpStatus.INTERNAL_SERVER_ERROR).cacheControl(noCache()).body("Something went wrong. Please try again later.");
+                        }
 
-            // no results, no content
-            if (maybeResults.isEmpty()) {
-                return status(HttpStatus.NO_CONTENT).cacheControl(noCache()).build();
-            }
+                        // no results, no content
+                        if (maybeResults.isEmpty()) {
+                            return status(HttpStatus.NO_CONTENT).cacheControl(noCache()).build();
+                        }
 
-            List<Flight> results = maybeResults.get();
+                        List<Flight> results = maybeResults.get();
 
-            return status(HttpStatus.OK).cacheControl(noCache()).body(results);
-        });
+                        return status(HttpStatus.OK).cacheControl(noCache()).body(results);
+                    });
+        } catch (UncheckedIOException e) {
+            return completedFuture(status(HttpStatus.INTERNAL_SERVER_ERROR).cacheControl(noCache()).body("Unable to load flight data. Please try again later."));
+        }
     }
 }
