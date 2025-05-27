@@ -11,11 +11,9 @@ import java.time.DayOfWeek;
 import static java.time.LocalTime.parse;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+
 import static java.util.Objects.requireNonNull;
-import java.util.Optional;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
@@ -42,6 +40,9 @@ public class FlightInfoRepositoryImpl implements FlightInfoRepository {
 
     private final DataSourceConfiguration dataSourceConfiguration;
 
+    private final Map<String, List<Flight>> flightsCache = new HashMap<>();
+
+    private static final String FLIGHTS_CACHE_KEY = "cache-key";
 
     /**
      * The constructor
@@ -71,28 +72,34 @@ public class FlightInfoRepositoryImpl implements FlightInfoRepository {
 
 
     private CompletableFuture<Optional<List<Flight>>> getFilteredFlights(Predicate<Flight> flightPredicate) {
-        // load the resource
-        URL resource = requireNonNull(resourceLoader.getClassLoader()).getResource(dataSourceConfiguration.getCsvLocation());
+        List<Flight> flightStream = loadData();
 
-        // create the reader
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(requireNonNull(resource).openStream()))) {
+        // return the results
+        return completedFuture(Optional.of(flightStream
+                        .stream()
+                .filter(flightPredicate)
+                .sorted(Comparator.comparing(Flight::departureTime))
+                .toList()));
+    }
 
-            // map the flights
-            List<Flight> flights = reader
-                    .lines()
-                    .skip(1L)
-                    .map(this::flight)
-                    .filter(flightPredicate)
-                    .sorted(Comparator.comparing(Flight::departureTime))
-                    .toList();
+    private List<Flight> loadData() {
+        return flightsCache.computeIfAbsent(FLIGHTS_CACHE_KEY, (k) -> {
+            // load the resource
+            URL resource = requireNonNull(resourceLoader.getClassLoader()).getResource(dataSourceConfiguration.getCsvLocation());
 
-            // return the results
-            return completedFuture(Optional.of(flights));
-
-        } catch (IOException e) {
-            LOGGER.error("Could not retrieve flight data", e);
-            throw new UncheckedIOException(e);
-        }
+            // create the reader
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(requireNonNull(resource).openStream()))) {
+                // map the flights
+                return reader
+                        .lines()
+                        .skip(1L)
+                        .map(this::flight)
+                        .toList();
+            } catch (IOException e) {
+                LOGGER.error("Could not retrieve flight data", e);
+                throw new UncheckedIOException(e);
+            }
+        });
     }
 
     /**
