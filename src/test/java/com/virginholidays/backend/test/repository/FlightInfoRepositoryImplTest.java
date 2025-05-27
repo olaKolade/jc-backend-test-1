@@ -71,17 +71,17 @@ public class FlightInfoRepositoryImplTest {
         assertThat(maybeFlights.get().get(0).days().size(), equalTo(1));
         assertThat(maybeFlights.get().get(0).days().get(0), equalTo(DayOfWeek.TUESDAY));
 
-        assertThat(maybeFlights.get().get(11).departureTime(), equalTo(LocalTime.of(15, 35)));
-        assertThat(maybeFlights.get().get(11).destination(), equalTo("Las Vegas"));
-        assertThat(maybeFlights.get().get(11).iata(), equalTo("LAS"));
-        assertThat(maybeFlights.get().get(11).flightNo(), equalTo("VS044"));
-        assertThat(maybeFlights.get().get(11).days().size(), equalTo(7));
-        assertThat(maybeFlights.get().get(11).days().get(0), equalTo(DayOfWeek.SUNDAY));
-        assertThat(maybeFlights.get().get(11).days().get(1), equalTo(DayOfWeek.MONDAY));
-        assertThat(maybeFlights.get().get(11).days().get(2), equalTo(DayOfWeek.TUESDAY));
-        assertThat(maybeFlights.get().get(11).days().get(3), equalTo(DayOfWeek.WEDNESDAY));
-        assertThat(maybeFlights.get().get(11).days().get(4), equalTo(DayOfWeek.THURSDAY));
-        assertThat(maybeFlights.get().get(11).days().get(5), equalTo(DayOfWeek.FRIDAY));
-        assertThat(maybeFlights.get().get(11).days().get(6), equalTo(DayOfWeek.SATURDAY));
+        assertThat(maybeFlights.get().get(26).departureTime(), equalTo(LocalTime.of(15, 35)));
+        assertThat(maybeFlights.get().get(26).destination(), equalTo("Las Vegas"));
+        assertThat(maybeFlights.get().get(26).iata(), equalTo("LAS"));
+        assertThat(maybeFlights.get().get(26).flightNo(), equalTo("VS044"));
+        assertThat(maybeFlights.get().get(26).days().size(), equalTo(7));
+        assertThat(maybeFlights.get().get(26).days().get(0), equalTo(DayOfWeek.SUNDAY));
+        assertThat(maybeFlights.get().get(26).days().get(1), equalTo(DayOfWeek.MONDAY));
+        assertThat(maybeFlights.get().get(26).days().get(2), equalTo(DayOfWeek.TUESDAY));
+        assertThat(maybeFlights.get().get(26).days().get(3), equalTo(DayOfWeek.WEDNESDAY));
+        assertThat(maybeFlights.get().get(26).days().get(4), equalTo(DayOfWeek.THURSDAY));
+        assertThat(maybeFlights.get().get(26).days().get(5), equalTo(DayOfWeek.FRIDAY));
+        assertThat(maybeFlights.get().get(26).days().get(6), equalTo(DayOfWeek.SATURDAY));
     }
 }
