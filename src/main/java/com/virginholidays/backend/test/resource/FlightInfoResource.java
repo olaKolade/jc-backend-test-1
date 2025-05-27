@@ -3,9 +3,12 @@ package com.virginholidays.backend.test.resource;
 import com.virginholidays.backend.test.api.Flight;
 import com.virginholidays.backend.test.service.FlightInfoService;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 import javax.validation.constraints.NotEmpty;
+
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.springframework.http.CacheControl.noCache;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,8 +45,19 @@ public class FlightInfoResource {
      */
     @RequestMapping(method = RequestMethod.GET, path = "/{date}/results")
     public CompletionStage<ResponseEntity<?>> getResults(@PathVariable("date") @NotEmpty String date) {
+        LocalDate inputDate;
 
-        return flightInfoService.findFlightByDate(LocalDate.now()).thenApply(maybeResults -> {
+        try {
+            inputDate = LocalDate.parse(date);
+        } catch (DateTimeParseException e) {
+            return completedFuture(
+                    status(HttpStatus.BAD_REQUEST)
+                    .cacheControl(noCache())
+                    .body("Invalid date format. Allowed formats are: yyyy-MM-dd")
+            );
+        }
+
+        return flightInfoService.findFlightByDate(inputDate).thenApply(maybeResults -> {
 
             // no results, no content
             if (maybeResults.isEmpty()) {
